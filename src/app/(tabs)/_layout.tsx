@@ -1,49 +1,52 @@
 import { Redirect, Tabs } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { useAuth } from '@/src/providers/AuthProvider';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import NotificationProvider from '@/src/providers/NotificationProvider';
+import { StatusBar, StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: '#02051f',
+  },
+  header: {
+    backgroundColor: '#040a38',
+  }
+});
 
 export default function TabsLayout() {
-  const { isAuthenticated } = useAuth()
-  if (!isAuthenticated) {
-    return <Redirect href="/(auth)" />
-  }
-
   return (
     <NotificationProvider>
+      <StatusBar barStyle="light-content" backgroundColor="#040a38" />
+
       <Tabs
-        screenOptions={{ tabBarActiveTintColor: 'black', tabBarShowLabel: false }}
+        screenOptions={{
+          tabBarShowLabel: false,
+          tabBarStyle: styles.tabBar,
+        }}
       >
         <Tabs.Screen
           name="index"
           options={{
-            headerTitle: 'For you',
+            headerTitle: 'Buscar placa',
             headerTitleAlign: 'center',
             tabBarIcon: ({ color }) => (
-              <FontAwesome name="home" size={26} color={color} />
+              <Ionicons name="notifications" size={26} color={color} />
             ),
+            headerStyle: styles.header,
+            headerTintColor: '#ffffff',
           }}
         />
 
         <Tabs.Screen
-          name="new"
+          name="socio"
           options={{
-            headerTitle: 'Create post',
-            headerTitleAlign: 'center',
-            tabBarIcon: ({ color }) => (
-              <FontAwesome name="plus-square-o" size={26} color={color} />
-            ),
-          }}
-        />
-
-        <Tabs.Screen
-          name="profile"
-          options={{
-            headerTitle: 'Profile',
+            headerTitle: 'Cadastro',
             headerTitleAlign: 'center',
             tabBarIcon: ({ color }) => (
               <FontAwesome name="user" size={26} color={color} />
             ),
+            headerStyle: styles.header,
+            headerTintColor: '#ffffff',
           }}
         />
       </Tabs>

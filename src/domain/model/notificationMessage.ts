@@ -3,5 +3,4 @@ export type NotificationMessage = {
   sound: string
   title: string
   body: string
-  data: any
 }

@@ -1,10 +1,8 @@
-import { ReactNode, useEffect, useRef, useState } from "react"
+import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react"
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from "react-native";
 import Constants from 'expo-constants';
-import { supabase } from "../lib/supabase";
-import { useAuth } from "./AuthProvider";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -18,23 +16,17 @@ type Props = {
   children: ReactNode
 }
 
+const ExpoPushTokenContext = createContext<string | null>(null);
+
 export default function NotificationProvider({ children }: Props) {
   const [expoPushToken, setExpoPushToken] = useState('');
-  const [notification, setNotification] = useState<Notifications.Notification | undefined>(
-    undefined
-  );
   const notificationListener = useRef<Notifications.Subscription>();
-
-  const { user } = useAuth()
 
   useEffect(() => {
     registerForPushNotificationsAsync()
       .then(token => setExpoPushToken(token ?? ''))
       .catch((error: any) => setExpoPushToken(`${error}`));
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification);
-    });
 
     return () => {
       notificationListener.current &&
@@ -42,18 +34,20 @@ export default function NotificationProvider({ children }: Props) {
     };
   }, []);
 
-  const saveUserPushToken = async () => {
-    if (!user ||  !user.id || !expoPushToken) return
+  return (
+    <ExpoPushTokenContext.Provider value={expoPushToken}>
+      {children}
+    </ExpoPushTokenContext.Provider>
+  )
+}
 
-    const { data } = await supabase.from('profiles')
-      .update({ push_token: expoPushToken }).eq('id', user.id)
+
+export function useExpoPushToken() {
+  const token = useContext(ExpoPushTokenContext);
+  if (token === undefined) {
+    throw new Error("useExpoPushToken must be used within a NotificationProvider");
   }
-
-  useEffect(() => {
-    saveUserPushToken()
-  }, [expoPushToken])
-
-  return children
+  return token;
 }
 
 function handleRegistrationError(errorMessage: string) {
@@ -79,7 +73,7 @@ async function registerForPushNotificationsAsync() {
       finalStatus = status;
     }
     if (finalStatus !== 'granted') {
-      handleRegistrationError('Permission not granted to get push token for push notification!');
+      handleRegistrationError('Precisamos de permissão para te avisar quando seu carro estiver travando o carro de algum irmão.');
       return;
     }
     const projectId =
@@ -93,7 +87,6 @@ async function registerForPushNotificationsAsync() {
           projectId,
         })
       ).data;
-      console.log(pushTokenString);
       return pushTokenString;
     } catch (e: unknown) {
       handleRegistrationError(`${e}`);

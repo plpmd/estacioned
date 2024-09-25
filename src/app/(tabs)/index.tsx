@@ -1,46 +1,71 @@
-import { Alert, FlatList, Image, View } from 'react-native';
-import posts from '@/assets/data/posts.json'
-import PostListItem from '@/src/components/PostListItem';
-import { useEffect, useState } from 'react';
+import TextInput from '@/src/components/TextInput';
 import { supabase } from '@/src/lib/supabase';
-import { Post } from '@/src/domain/model';
-import { useAuth } from '@/src/providers/AuthProvider';
+import { sendCarNotification } from '@/src/util/notifications';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SetStateAction, useState } from 'react';
+import { Alert, FlatList, Linking, Pressable, Text, View } from 'react-native';
 
-export default function FeedScreen() {
-  const [posts, setPosts] = useState<Post[]>([])
-  const [loading, setLoading] = useState(false);
+export default function CreatePost() {
+  const [placa, setPlaca] = useState('')
+  const [possiblePlacas, setPossiblePlacas] = useState<any>([])
 
-  useEffect(() => {
-    fetchPosts()
-  }, [])
+  const onChangePlaca = async (newPlaca: SetStateAction<string>) => {
+    setPlaca(newPlaca)
 
-  const { user } = useAuth()
-
-  const fetchPosts = async () => {
-    setLoading(true);
-    let { data, error } = await supabase
-      .from('posts')
-      .select('*, user:profiles(*), my_likes:likes(*), likes(count)')
-      // .eq('id', 49) // show only my posts
-      .eq('my_likes.user_id', user?.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      Alert.alert('Something went wrong');
+    const pattern = `${newPlaca}%`;
+    const { data } = await supabase.from('socios').select('*').ilike('placa', pattern);
+    if (data) {
+      setPossiblePlacas(data)
     }
-    if (data && Array.isArray(data)) {
-      setPosts(data);
-    }
-    setLoading(false);
-  };
+  }
+
+  const onSelectedPlaca = async (selectedPlaca: any) => {
+    setPossiblePlacas([selectedPlaca])
+    
+    const loggedString = await AsyncStorage.getItem('estacioned-logged');
+    const logged = JSON.parse(loggedString || '{}')
+    const nameWantToLeave = logged?.name || 'alguém'
+
+    sendCarNotification(selectedPlaca.push_notification, nameWantToLeave)
+    
+    Alert.alert(`O dono do carro é ${selectedPlaca.name}`, `Enviamos uma notificação para o app do dono do carro. \n\nQuer iniciar uma conversa no Whatsapp com ${selectedPlaca.name} - ${selectedPlaca.phone}?`, [
+      {
+        text: 'Não',
+      },
+      {text: 'Sim', onPress: () =>{
+        const whatsappUrl = `https://wa.me/${selectedPlaca.phone}`;
+        Linking.openURL(whatsappUrl)
+      }},
+    ]);
+  }
+
   return (
-    <FlatList
-      data={posts}
-      renderItem={({ item }) => <PostListItem post={item} />}
-      contentContainerStyle={{ gap: 10, maxWidth: 512, alignSelf: 'center', width: '100%' }}
-      showsVerticalScrollIndicator={false}
-      onRefresh={fetchPosts}
-      refreshing={loading}
-    />
-  );
+    <View className='bg-[#040a38] gap-3 p-3 flex-1'>
+      <TextInput
+        header={'Qual é a placa do carro que está travando sua saída?'}
+        placeholder={'Digite aqui'}
+        value={placa}
+        onChangeText={onChangePlaca}
+      />
+      {
+        possiblePlacas.length > 0 &&
+        <Text className='text-white'>Resultados:</Text>
+      }
+      <FlatList
+        data={possiblePlacas}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() => onSelectedPlaca(item)}
+            className='border border-gray-500 p-6 rounded-md mt-3 flex-row justify-between'>
+            <Text className='text-white'>{item.placa}</Text>
+            <Ionicons name="notifications" size={20} color={'white'} />
+          </Pressable>
+        )}
+        contentContainerStyle={{ alignContent: 'center', width: '100%' }}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
+  )
+
 }
