@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "EstacioNED",
-    "slug": "EstacioNED",
-    "scheme": "EstacioNED",
+    "name": "estacioned",
+    "slug": "estacioned",
+    "scheme": "estacioned",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,9 +20,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
-      ]
+      "package": "com.plpmd.estacioned",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -33,7 +32,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "025f46bc-a021-4375-9963-826d18319e3f"
+        "projectId": "f327a3a9-5a33-4cd2-a6a5-a4b6afc8eb33"
       }
     },
     "owner": "plpmd"
