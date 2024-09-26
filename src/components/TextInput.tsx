@@ -12,13 +12,12 @@ type Props = {
 export default function TextInput({ header, placeholder, value, onChangeText, autoCapitalize = false}: Props) {
   return (
     <View className="mb-2">
-      <Text className='text-white font-semibold mb-2 text-lg'>{header}</Text>
       <RNTextInput
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
-        className='border border-gray-300 p-3 rounded-md text-white'
-        placeholderTextColor={'gray'}
+        className='border-none p-3 rounded-xl bg-[#243647]  text-white font-Manrope-Regular'
+        placeholderTextColor={'#93adc7'}
         autoCapitalize={autoCapitalize ? 'characters' : 'words'}
       />
     </View>

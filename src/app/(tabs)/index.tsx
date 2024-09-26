@@ -48,24 +48,27 @@ export default function CreatePost() {
   }
 
   return (
-    <View className='bg-[#040a38] gap-3 p-3 flex-1'>
+    <View className='bg-[#121A21] gap-3 p-4 flex-1'>
+      <Text className='font-Manrope-Bold text-white text-[22px]  tracking-[-0.015em] px-4 text-center pb-3 pt-5'
+      >Notificar dono do carro
+      </Text>
       <TextInput
         header={'Qual é a placa do carro que está travando sua saída?'}
-        placeholder={'Digite aqui'}
+        placeholder={'Escreva a placa do carro travando sua saída'}
         value={placa}
         onChangeText={onChangePlaca}
       />
       {
         possiblePlacas.length > 0 &&
-        <Text className='text-white'>Resultados:</Text>
+        <Text className='text-white font-Manrope-Bold text-lg tracking-[-0.015em] px-2 pb-2 pt-4"'>Resultados:</Text>
       }
       <FlatList
         data={possiblePlacas}
         renderItem={({ item }) => (
           <Pressable
             onPress={() => onSelectedPlaca(item)}
-            className='border border-gray-500 p-6 rounded-md mt-3 flex-row justify-between'>
-            <Text className='text-white'>{item.placa}</Text>
+            className='border border-[#243647] p-6 rounded-xl mt-3 flex-row justify-between'>
+            <Text className='text-white font-Manrope-Bold'>{item.placa}</Text>
             <Ionicons name="notifications" size={20} color={'white'} />
           </Pressable>
         )}

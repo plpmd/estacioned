@@ -8,7 +8,7 @@ type Props = {
 
 export default function Button({ text, onPress, loading }: Props) {
   return (
-    <Pressable disabled={loading} onPress={onPress} className='bg-blue-500 w-full p-3 items-center rounded-md'>
+    <Pressable disabled={loading} onPress={onPress} className='bg-[#1A80E5] w-full p-3 items-center rounded-xl'>
       {
         loading ?
           <ActivityIndicator color={'white'} />

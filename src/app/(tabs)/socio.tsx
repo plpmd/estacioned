@@ -1,4 +1,4 @@
-import { Alert, FlatList, Image, View } from 'react-native';
+import { Alert, FlatList, Image, Text, View } from 'react-native';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/src/lib/supabase';
 import TextInput from '@/src/components/TextInput';
@@ -60,7 +60,8 @@ export default function SocioScreen() {
     setLoading(false)
   }
   return (
-    <View className='bg-[#040a38] gap-3 p-3 flex-1'>
+    <View className='bg-[#121A21] gap-3 p-3 flex-1'>
+      <Text className='font-Manrope-Bold text-white text-[22px] leading-tight tracking-[-0.015em] px-4 text-center pb-3 pt-5'>Cadastro</Text>
       <TextInput
         header={'Qual é seu nome?'}
         placeholder={'Digite aqui'}
