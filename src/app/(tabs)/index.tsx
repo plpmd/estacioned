@@ -9,6 +9,7 @@ import { Alert, FlatList, Linking, Pressable, Text, View } from 'react-native';
 export default function CreatePost() {
   const [placa, setPlaca] = useState('')
   const [possiblePlacas, setPossiblePlacas] = useState<any>([])
+  const [notificationSent, setNotificationSent] = useState(false)
 
   const onChangePlaca = async (newPlaca: SetStateAction<string>) => {
     setPlaca(newPlaca)
@@ -16,27 +17,33 @@ export default function CreatePost() {
     const pattern = `${newPlaca}%`;
     const { data } = await supabase.from('socios').select('*').ilike('placa', pattern);
     if (data) {
+      setNotificationSent(false)
       setPossiblePlacas(data)
     }
   }
 
   const onSelectedPlaca = async (selectedPlaca: any) => {
     setPossiblePlacas([selectedPlaca])
-    
+
     const loggedString = await AsyncStorage.getItem('estacioned-logged');
     const logged = JSON.parse(loggedString || '{}')
     const nameWantToLeave = logged?.name || 'alguém'
 
-    sendCarNotification(selectedPlaca.push_notification, nameWantToLeave)
-    
+    if (!notificationSent) {
+      sendCarNotification(selectedPlaca.push_notification, nameWantToLeave)
+      setNotificationSent(true)
+    }
+
     Alert.alert(`O dono do carro é ${selectedPlaca.name}`, `Enviamos uma notificação para o app do dono do carro. \n\nQuer iniciar uma conversa no Whatsapp com ${selectedPlaca.name} - ${selectedPlaca.phone}?`, [
       {
         text: 'Não',
       },
-      {text: 'Sim', onPress: () =>{
-        const whatsappUrl = `https://wa.me/${selectedPlaca.phone}`;
-        Linking.openURL(whatsappUrl)
-      }},
+      {
+        text: 'Sim', onPress: () => {
+          const whatsappUrl = `https://wa.me/${selectedPlaca.phone}`;
+          Linking.openURL(whatsappUrl)
+        }
+      },
     ]);
   }
 
