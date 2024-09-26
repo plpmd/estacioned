@@ -13,7 +13,7 @@ export default function Button({ text, onPress, loading }: Props) {
         loading ?
           <ActivityIndicator color={'white'} />
           :
-          <Text className='text-white font-semibold'>{text}</Text>
+          <Text className='font-Manrope-Bold text-white font-semibold'>{text}</Text>
       }
     </Pressable>
   )

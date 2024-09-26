@@ -53,7 +53,6 @@ export default function CreatePost() {
       >Notificar dono do carro
       </Text>
       <TextInput
-        header={'Qual é a placa do carro que está travando sua saída?'}
         placeholder={'Escreva a placa do carro travando sua saída'}
         value={placa}
         onChangeText={onChangePlaca}

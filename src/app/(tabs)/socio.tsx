@@ -11,13 +11,13 @@ export default function SocioScreen() {
   const [phone, setPhone] = useState('')
   const [placa, setPlaca] = useState('')
   const [loading, setLoading] = useState(false)
-  const [storedPlaca, setStoredPlaca] = useState('')
+  const [userId, setUserId] = useState()
 
   const push_notification = useExpoPushToken()
 
-  const getStoredPlaca = async () => {
-    const sPlaca = await AsyncStorage.getItem('estacioned-logged');
-    return sPlaca
+  const getStoredUser = async () => {
+    const storedUser = await AsyncStorage.getItem('estacioned-logged');
+    return JSON.parse(storedUser || '{}')
   }
 
   useEffect(() => {
@@ -25,11 +25,11 @@ export default function SocioScreen() {
   }, [])
 
   const getRegisteredSocios = async () => {
-    const sPlaca = await getStoredPlaca()
-    if (sPlaca) {
-      setStoredPlaca(sPlaca)
-      const { data } = await supabase.from('socios').select('*').eq('placa', sPlaca);
+    const storedUser = await getStoredUser()
+    if (storedUser && storedUser.placa) {
+      const { data } = await supabase.from('socios').select('*').eq('placa', storedUser.placa);
       if (data && data[0]) {
+        setUserId(data[0].id)
         setName(data[0].name)
         setPhone(data[0].phone)
         setPlaca(data[0].placa)
@@ -37,59 +37,74 @@ export default function SocioScreen() {
     }
   }
 
+  const handlePhoneNumber = () => {
+    const onlyNumberPhone = phone.replace(/[()\s-]/g, '')
+    if (onlyNumberPhone.length < 10) return false
+    if (onlyNumberPhone.length === 10) {
+      return onlyNumberPhone.slice(0, 2) + '9' + onlyNumberPhone.slice(2);
+    }
+    return onlyNumberPhone
+  }
+
   const registerSocio = async () => {
     setLoading(true)
+    const phoneNumber = handlePhoneNumber()
+    if (phoneNumber) {
+      let { error } = await supabase.from('socios')
+        .upsert([
+          {
+            id: userId,
+            name,
+            phone: phoneNumber,
+            placa,
+            push_notification
+          },
+        ])
+        .select()
 
-    let { error } = await supabase.from('socios')
-      .upsert([
-        {
-          name,
-          phone: phone.replace(/[()\s-]/g, ''),
-          placa,
-          push_notification
-        },
-      ])
-      .select()
+      if (!error) {
+        await AsyncStorage.setItem('estacioned-logged', JSON.stringify({ name, placa }));
+        Alert.alert(userId? 'Cadastrdo atualizado':'Cadastro realizado!', 'Seus dados estão guardados.')
+      }
 
-    if (!error) {
-      await AsyncStorage.setItem('estacioned-logged', JSON.stringify({ name, placa }));
-      setStoredPlaca(placa)
-      Alert.alert('Cadastro realizado!')
+    } else {
+      Alert.alert('Número de telefone inválido', 'Por gentileza, insira DDD e número.')
     }
 
     setLoading(false)
   }
   return (
-    <View className='bg-[#121A21] gap-3 p-3 flex-1'>
+    <View className='bg-[#121A21] gap-10 p-3 flex-1'>
       <Text className='font-Manrope-Bold text-white text-[22px] leading-tight tracking-[-0.015em] px-4 text-center pb-3 pt-5'>Cadastro</Text>
-      <TextInput
-        header={'Qual é seu nome?'}
-        placeholder={'Digite aqui'}
-        value={name}
-        onChangeText={(newName) => setName(newName)}
-      />
-
-      <TextInput
-        header={'Qual é seu telefone?'}
-        placeholder={'DDD+Número'}
-        value={phone}
-        onChangeText={(newPhone) => setPhone(newPhone)}
-      />
-      <TextInput
-        header={'Qual é a placa do seu carro?'}
-        placeholder={'Digite aqui'}
-        value={placa}
-        onChangeText={(newPlaca) => setPlaca(newPlaca)}
-        autoCapitalize
-      />
-
-      <View className='mt-3'>
-        <Button
-          text={storedPlaca.length > 0 ? 'Atualizar ' : 'Cadastrar'}
-          onPress={registerSocio}
-          loading={loading}
+      <View className='gap-3'>
+        <TextInput
+          header={'Nome:'}
+          placeholder={'Escreva seu nome.'}
+          value={name}
+          onChangeText={(newName) => setName(newName)}
         />
+
+        <TextInput
+          header={'Telefone:'}
+          placeholder={'Escreva seu telfone =(DDD + Número).'}
+          value={phone}
+          onChangeText={(newPhone) => setPhone(newPhone)}
+        />
+
+        <TextInput
+          header={'Placa:'}
+          placeholder={'Escreva a placa de seu carro.'}
+          value={placa}
+          onChangeText={(newPlaca) => setPlaca(newPlaca)}
+          autoCapitalize
+        />
+
       </View>
+      <Button
+        text={userId ? 'Atualizar ' : 'Cadastrar'}
+        onPress={registerSocio}
+        loading={loading}
+      />
     </View>
   );
 }
