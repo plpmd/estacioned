@@ -12,7 +12,7 @@ type Props = {
 export default function TextInput({ header, placeholder, value, onChangeText, autoCapitalize = false}: Props) {
   return (
     <View className="mb-2">
-      <Text className='text-white font-semibold mb-2'>{header}</Text>
+      <Text className='text-white font-semibold mb-2 text-lg'>{header}</Text>
       <RNTextInput
         placeholder={placeholder}
         value={value}
